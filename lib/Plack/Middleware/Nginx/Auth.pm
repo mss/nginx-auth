@@ -36,7 +36,7 @@ sub call {
 
     my %header = Nginx::Auth::prepare_header($env, $result);
     my @header = ( "Auth-Status" => delete $header{'Auth-Status'} );
-    return [ 200, [ @header, %header ], [] ];
+    return [ 204, [ @header, %header ], [] ];
 }
 
 1;
