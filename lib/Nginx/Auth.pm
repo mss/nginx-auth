@@ -153,6 +153,7 @@ sub resolve_host {
     return $host if $host =~ /:/;
 
     $host = gethostbyname($host);
+    return unless $host;
     $host = inet_ntoa($host);
 
     return $host;
