@@ -4,6 +4,7 @@ use Plack::Util::Accessor qw(
     default_host
     allowed_hosts
     denied_hosts
+    separator
 );
 
 use strict;
@@ -29,6 +30,8 @@ sub new {
         return $hosts;
     });
 
+    $self->separator("@") unless $self->separator;
+
     return $self;
 }
 
@@ -47,6 +50,12 @@ sub prepare_app {
             $_;
         } @{$hosts} ];
     });
+
+    unless (ref(my $sep = $self->separator) eq 'Regexp') {
+        $sep = join('', @{$sep}) if ref $sep eq 'ARRAY';
+        $sep = qr/[$sep]/;
+        $self->separator($sep);
+    }
 }
 
 sub call {
@@ -55,7 +64,8 @@ sub call {
     my $req = $self->new_request($env);
     return 403 unless $req->auth_username;
 
-    my($user, $domain) = split(/[@+%]/, $req->auth_username, 2);
+    warn ref $self->separator;
+    my($user, $domain) = split($self->separator, $req->auth_username, 2);
     $domain ||= $self->default_host;
     return 403 unless $domain;
 
