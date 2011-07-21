@@ -116,21 +116,21 @@ sub _map_ports {
 }
 
 sub _check_hosts {
-    my($self, $ip) = @_;
+    my($self, $host) = @_;
 
-    return unless $ip;
-    $ip = Net::IP->new($ip) unless ref $ip;
+    return unless $host;
+    $host = Net::IP->new($host) unless ref $host;
 
     my $found;
     foreach my $net (@{$self->allowed_hosts}) {
-        my $r = $net->overlaps($ip);
+        my $r = $net->overlaps($host);
         next unless defined $r;
         $found = $r != $Net::IP::IP_NO_OVERLAP;
         last if $found;
     }
     return unless $found;
     foreach my $net (@{$self->denied_hosts}) {
-        my $r = $net->overlaps($ip);
+        my $r = $net->overlaps($host);
         next unless defined $r;
         return if $r != $Net::IP::IP_NO_OVERLAP;
     }
