@@ -55,7 +55,7 @@ sub merge_env {
 # wait
 sub prepare_header {
     my $env = shift;
-    croak("expected HASH ref") unless ref $env eq 'HASH';
+    croak("expected hash ref") unless ref $env eq 'HASH';
 
     my $status = @_ % 2 ? shift : undef;
     my %result = @_;
@@ -66,7 +66,7 @@ sub prepare_header {
             $status = undef;
         }
         when (/./) {
-            croak("unexpected $_ ref");
+            croak("unexpected ".lc()." ref");
         }
     }
     $status = delete $result{'status'} if $result{'status'};
