@@ -22,7 +22,7 @@ sub new {
 
     my %defaults = (
         allowed_hosts => [ ],
-        allowed_ports => [ qw(smtp smtps imap imaps pop3 pop3s) ],
+        allowed_ports => [ qw(smtp smtps submission imap imaps pop3 pop3s) ],
         denied_hosts  => [ qw(224.0.0.0/4 ff00::/8) ],
         denied_ports  => [ ],
     );
