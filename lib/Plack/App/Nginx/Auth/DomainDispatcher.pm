@@ -5,6 +5,7 @@ use Plack::Util::Accessor qw(
     allowed_hosts
     denied_hosts
     separator
+    user_filter
 );
 
 use strict;
@@ -71,7 +72,11 @@ sub call {
     my $server = Nginx::Auth::resolve_host($domain);
     return 403 unless $self->_check_hosts($server);
 
-    return { 'server' => $server };
+    my $filter = $self->user_filter || sub { $req->auth_username };
+    return {
+        'server'   => $server,
+        'username' => $filter->($user, $domain),
+    };
 }
 
 sub _map_hosts {
