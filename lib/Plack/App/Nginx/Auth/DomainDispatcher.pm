@@ -72,10 +72,12 @@ sub call {
     my $server = Nginx::Auth::resolve_host($domain);
     return 403 unless $self->_check_hosts($server);
 
-    my $filter = $self->user_filter || sub { $req->auth_username };
+    $user = ($self->user_filter || sub { $req->auth_username })->($user, $domain);
+    return 403 unless defined $user;
+
     return {
         'server'   => $server,
-        'username' => $filter->($user, $domain),
+        'username' => $user,
     };
 }
 
