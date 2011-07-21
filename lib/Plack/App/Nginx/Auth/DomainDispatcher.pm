@@ -3,7 +3,9 @@ use parent qw(Plack::App::Nginx::Auth);
 use Plack::Util::Accessor qw(
     default_host
     allowed_hosts
+    allowed_ports
     denied_hosts
+    denied_ports
     separator
     user_filter
 );
@@ -20,7 +22,9 @@ sub new {
 
     my %defaults = (
         allowed_hosts => [ ],
+        allowed_ports => [ qw(smtp smtps imap imaps pop3 pop3s) ],
         denied_hosts  => [ qw(224.0.0.0/4 ff00::/8) ],
+        denied_ports  => [ ],
     );
     $self->_map_hosts(sub {
         my($hosts, $key) = @_;
@@ -29,6 +33,12 @@ sub new {
         return $hosts unless $key eq 'allowed_hosts';
         push(@{$hosts}, $self->default_host) if $self->default_host;
         return $hosts;
+    });
+    $self->_map_ports(sub {
+        my($ports, $key) = @_;
+        $ports ||= $defaults{$key};
+        $ports = [ $ports ] unless ref $ports;
+        return $ports;
     });
 
     $self->separator("@") unless $self->separator;
@@ -50,6 +60,14 @@ sub prepare_app {
             }
             $_;
         } @{$hosts} ];
+    });
+    $self->_map_ports(sub {
+        my($ports, $key) = @_;
+        $ports = [] unless $ports;
+        $ports = [ $ports ] unless ref $ports;
+        return [ grep {$_} map {
+            $_ = Nginx::Auth::resolve_port($_);
+        } @{$ports} ];
     });
 
     unless (ref(my $sep = $self->separator) eq 'Regexp') {
@@ -89,6 +107,14 @@ sub _map_hosts {
     }
 }
 
+sub _map_ports {
+    my($self, $sub) = @_;
+
+    foreach my $key (qw(allowed_ports denied_ports)) {
+        $self->{$key} = $sub->($self->{$key}, $key);
+    }
+}
+
 sub _check_hosts {
     my($self, $ip) = @_;
 
@@ -108,6 +134,14 @@ sub _check_hosts {
         next unless defined $r;
         return if $r != $Net::IP::IP_NO_OVERLAP;
     }
+    return 1;
+}
+
+sub _check_ports {
+    my($self, $port) = @_;
+
+    return unless grep { $_ eq $port } @{$self->allowed_ports};
+    return     if grep { $_ eq $port } @{$self->denied_ports};
     return 1;
 }
 
