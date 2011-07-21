@@ -64,7 +64,6 @@ sub call {
     my $req = $self->new_request($env);
     return 403 unless $req->auth_username;
 
-    warn ref $self->separator;
     my($user, $domain) = split($self->separator, $req->auth_username, 2);
     $domain ||= $self->default_host;
     return 403 unless $domain;
