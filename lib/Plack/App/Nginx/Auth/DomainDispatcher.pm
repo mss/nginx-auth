@@ -2,6 +2,7 @@ package Plack::App::Nginx::Auth::DomainDispatcher;
 use parent qw(Plack::App::Nginx::Auth);
 use Plack::Util::Accessor qw(
     default_host
+    default_port
     allowed_hosts
     allowed_ports
     denied_hosts
@@ -92,6 +93,11 @@ sub call {
 
     $user = ($self->user_filter || sub { $req->auth_username })->($user, $domain);
     return 403 unless defined $user;
+
+    if (my $port = $self->default_port) {
+        $port = $port->{$env->{'nginx.auth.protocol'}} if ref $port eq 'HASH';
+        $server .= ":" . Nginx::Auth::resolve_port($port) if $port;
+    }
 
     return {
         'server'   => $server,

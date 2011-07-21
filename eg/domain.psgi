@@ -6,5 +6,6 @@ Plack::App::Nginx::Auth::DomainDispatcher->new(
     separator      => qr/[^a-zA-Z0-9._-]/,
     user_filter    => sub { return join('@', @_) },
     default_host   => 'example.com',
+    default_port   => { smtp => 'submission' },
     allowed_hosts  => 'localhost',
 );
