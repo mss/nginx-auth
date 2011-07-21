@@ -34,6 +34,7 @@ sub prepare_env {
         "$nginx.smtp.from"   => $env->{HTTP_SMTP_FROM} // "",
         "$nginx.smtp.to"     => $env->{HTTP_SMTP_TO} // "",
     );
+    $nginx{"$nginx.client.host"} = "" if $nginx{"$nginx.client.host"} eq "[UNAVAILABLE]";
     return wantarray ? %nginx : { %nginx };
 }
 
